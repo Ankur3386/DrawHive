@@ -1,5 +1,5 @@
 {
-  "name": "drawHive",
+  "name": "DrawHive",
   "private": true,
   "scripts": {
     "build": "turbo run build",

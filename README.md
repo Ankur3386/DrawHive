@@ -133,3 +133,16 @@ Learn more about the power of Turborepo:
 - [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
 - [Configuration Options](https://turborepo.com/docs/reference/configuration)
 - [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+
+
+
+# Step i have done 
+1. Initialized an empty turbor repo
+2. Deleted the docs app as 1 frontend needed 
+3. Added http-server, ws-server
+4. Added package.json in both the places
+5. Added tsconfig.json in both the places, and imported it from @repo/typescript-config/base.json
+6. Added @repo/typescript-config as a dependency in both ws-server and http-server in package.json
+7. added dev,start,build in package.json of  ws-server and http-server
+8.update turbo.json for  ws-server and http-server
+9. initialize  ws-server and http-server
