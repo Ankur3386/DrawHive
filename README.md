@@ -1,4 +1,4 @@
-🐝 DrawHive – Collaborative Drawing Platform
+#🐝 DrawHive – Collaborative Drawing Platform
 
 DrawHive is a real-time collaborative drawing and communication platform built with a Turborepo monorepo structure. It brings together multiple backend services and a web frontend to enable seamless, low-latency collaboration.
 
@@ -41,3 +41,4 @@ DrawHive is designed to be more than just a whiteboard. It’s a collaboration h
 7. added dev,start,build in package.json of  ws-server and http-server
 8.update turbo.json for  ws-server and http-server
 9. initialize  ws-server and http-server
+10. created common packages for zod and written zod 
