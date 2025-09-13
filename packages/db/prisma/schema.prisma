@@ -17,18 +17,28 @@ model User{
   id   String   @id @default(uuid()) 
   username String
   password String
-  email String
-  photo String
-
+  name String
+  email String @unique
+  photo String?
+  rooms Room[]
+  chats Chat[]
 }
+
 model Chat{
 id Int @id @default(autoincrement())
-slug String @unique
-createdAt DateTime @default(now())
-}
-model Room{
-id Int @id @default(autoincrement())
-
 message String 
 userId String
+roomId Int
+room Room @relation(fields: [roomId], references: [id])
+user User @relation( fields:[userId], references: [id])
+}
+
+
+model Room{
+id Int @id @default(autoincrement())
+createdAt DateTime @default(now())
+slug String @unique
+adminId String
+user   User @relation(fields: [adminId], references: [id])
+chats Chat[]
 }
