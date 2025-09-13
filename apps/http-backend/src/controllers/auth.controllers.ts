@@ -109,3 +109,15 @@ data:{
 
     return res.json(getroom);
 }
+export const roomChat=async(req:Request,res:Response,next:NextFunction)=>{
+const roomId =Number(req.params.roomId)
+const message = await prismaClient.chat.findMany({
+where:{
+    roomId:roomId
+},
+orderBy:{
+    id:'desc'
+},take:50
+})
+return res.json({message})
+}
