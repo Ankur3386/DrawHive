@@ -43,3 +43,5 @@ DrawHive is designed to be more than just a whiteboard. It’s a collaboration h
 9. initialize  ws-server and http-server
 10. created common packages for zod and written zod 
 11.created comman db structure and write schema and generated client and exported client
+12.created http routes with controller 
+13.created ws room  and save  message in db  
