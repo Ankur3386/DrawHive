@@ -12,12 +12,14 @@ const zod =createUserSchema.safeParse(req.body);
 if(!zod.success){
     return res.json("give correct credentials")
 }
+console.log("hi")
 const {username,password,email,name}=req.body
  const existingUser= await  prismaClient.user.findUnique({
     where:{  email}});
  if(existingUser){
       return res.json("user already exist")
  }
+ console.log("hi")
  const hashedPassword =await bcrypt.hash(password,10);
  if(!hashedPassword){
      return res.json("error hashing ppassword");
@@ -31,9 +33,11 @@ const {username,password,email,name}=req.body
     }
    
  })
+ console.log("hi")
  if(!user){
       return res.json("error creating user");
  }
+ console.log("hi")
  const newUser = await prismaClient.user.findUnique({
     where:{
         email}});
@@ -78,7 +82,7 @@ if(!token){
  
 }
 export const room =async(req:Request,res:Response,next:NextFunction)=>{
-      console.log("h")
+   
 
     const parseddata= roomSchema.safeParse(req.body);
      if(!parseddata.success){
@@ -96,7 +100,7 @@ data:{
 }
     })
     if(!room){
-        return res.status(200).json({message:"room not creaed successfully"})
+        return res.status(200).json({message:"room not created successfully"})
     }
     const getroom= await prismaClient.room.findUnique({
         where:{
@@ -119,5 +123,22 @@ orderBy:{
     id:'desc'
 },take:50
 })
+if(!message){
+     return res.status(400).json({message:"message not found"})
+}
 return res.json({message})
 }
+export const gettRoomBySlug = async (req: Request, res: Response, next: NextFunction) => {
+  const slug = req.params.slug;
+
+ const room = await prismaClient.room.findFirst({
+  where: { slug }
+});
+
+if (!room) {
+  return res.status(404).json({ error: "Room not found" });
+}
+
+return res.status(200).json(room);
+
+};
