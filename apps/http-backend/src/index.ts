@@ -6,4 +6,4 @@ import userRouter from "./routes/auth.route";
 
 app.use('/v1/user',userRouter);
 
-app.listen(3001)
+app.listen(3005)

@@ -19,7 +19,7 @@ const {username,password,email,name}=req.body
  if(existingUser){
       return res.json("user already exist")
  }
- console.log("hi")
+ 
  const hashedPassword =await bcrypt.hash(password,10);
  if(!hashedPassword){
      return res.json("error hashing ppassword");
@@ -33,11 +33,11 @@ const {username,password,email,name}=req.body
     }
    
  })
- console.log("hi")
+
  if(!user){
       return res.json("error creating user");
  }
- console.log("hi")
+ 
  const newUser = await prismaClient.user.findUnique({
     where:{
         email}});
