@@ -45,3 +45,6 @@ DrawHive is designed to be more than just a whiteboard. It’s a collaboration h
 11. created comman db structure and write schema and generated client and exported client
 12. created http routes with controller 
 13. created ws room  and save  message in db  
+14. created a canvas from scratch
+15. created logic  for rect and circle 
+16. shifted logic from function to class
