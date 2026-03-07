@@ -8,14 +8,15 @@
     "dev": "pnpm run build && pnpm run start"
   },
   "devDependencies": {
- "@repo/typescript-config": "workspace:*",
-    "@repo/backend-common":  "workspace:*" ,
-   "@repo/db": "workspace:*"
+    "@repo/backend-common": "workspace:*",
+    "@repo/db": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
   },
   "dependencies": {
-   
+    "@types/dotenv": "^8.2.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/ws": "^8.18.1",
+    "dotenv": "^17.2.4",
     "jsonwebtoken": "^9.0.2",
     "ws": "^8.18.3"
   },
