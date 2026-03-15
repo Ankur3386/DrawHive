@@ -14,7 +14,7 @@ export class User{
         this.ws.on('message',async(message:any)=>{
           const parsedData =JSON.parse(message)
           switch (parsedData.type){
-            case 'join_room':
+          case 'join_room':
               const  messageRoomId=parsedData.roomId
               if(!messageRoomId){
                 this.ws.close();
@@ -35,7 +35,7 @@ export class User{
           case 'leave_room':
             RoomManager.getInstance().removeUser(this.roomId!,this.userId);
             break;
-            case 'chat':
+          case 'chat':
               const roomId = parsedData.roomId;
               const message= parsedData.message;
               await prismaClient.chat.create({
@@ -49,9 +49,16 @@ export class User{
                     type:"chat",
                     message,
                     roomId
-                }
-                )
-
+                })
+                break;
+          case 'deleteChat':
+             const id= parsedData.id
+             const rId=parsedData.roomId
+              await prismaClient.chat.delete({
+                  where:{
+                    id
+                  }
+                })
           }
         })
     }

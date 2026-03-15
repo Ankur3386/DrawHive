@@ -3,29 +3,34 @@ import { getExistingShapes } from "./http";
 
  type Shape={
     type:"rect",
+    id:string,
     x:number,
     y:number,
     width:number,
     height:number
  }|{
     type:"circle",
+     id:string,
     centerX:number,
     centerY:number
     radius:number
  }|{
   type:"pencil";
+   id:string,
   points:{startX:number ,startY:number}[];
  }|{
   type:"eraser";
-  eraserArray:{startX:number ,startY:number}[]
+  id:string,
  }|{
 type:"arrow";
+ id:string,
 startX:number;
 startY:number;
 endX:number;
 endY:number;
  }|{
   type:"diamond",
+   id:string,
   startX:number,
   startY:number,
   endX:number,
@@ -45,7 +50,6 @@ startX:number;
 startY:number;
 private currShape:Tool ="circle"
 private pencilPointsArray:{startX:number,startY:number}[]=[]
-private eraserPointsArray:{startX:number,startY:number}[]=[]
  
 constructor(canvas:HTMLCanvasElement,roomId:string,socket:WebSocket){
 this.canvas=canvas ;
@@ -142,30 +146,16 @@ clearCanvas(){
   const centerX = shape.startX + radius ;
   const centerY = shape.startY +radius ;
   this.ctx.beginPath();
-   this.ctx.moveTo(centerX, shape.startY)
-  this.ctx.lineTo(shape.startX + width, centerY)
-  this.ctx.lineTo(centerX, shape.startY + height)
-  this.ctx.lineTo(shape.startX, centerY)
+   this.ctx.moveTo(centerX, shape.startY)//top
+     this.ctx.lineTo(shape.startX + width, centerY)//right
+  this.ctx.lineTo(centerX, shape.startY + height)//bottom
+
+    this.ctx.lineTo(shape.startX, centerY)//left
+
+
   this.ctx.closePath()
   this.ctx.strokeStyle="white"
   this.ctx.stroke()
-   }else if(shape.type==="eraser"){
-  this.ctx.beginPath()
-this.ctx.globalCompositeOperation = "destination-out"
-this.ctx.lineWidth = 20
-
-for(let i=1;i<shape.eraserArray.length;i++){
- const prev=shape.eraserArray[i-1]
- const curr=shape.eraserArray[i]
-
- if(!prev || !curr) continue
-
- this.ctx.moveTo(prev.startX,prev.startY)
- this.ctx.lineTo(curr.startX,curr.startY)
-}
-
-this.ctx.stroke()
-this.ctx.globalCompositeOperation="source-over"
    }
  })
  
@@ -177,9 +167,6 @@ mouseDownHandler=(e:any)=>{
      if(this.currShape=="pencil"){
       this.pencilPointsArray.push({startX:this.startX,startY:this.startY})
      }
-     if(this.currShape=="eraser"){
-  this.eraserPointsArray.push({startX:e.clientX,startY:e.clientY})
-}
 }
 mouseUpHandler=(e:any)=>{
 this.clicked =false;
@@ -190,6 +177,7 @@ this.clicked =false;
     console.log(currShape)
     if(currShape=="rect"){
       const shape:Shape ={type:"rect",
+        id:crypto.randomUUID(),
         x:this.startX,
         y:this.startY,
         width,
@@ -206,6 +194,7 @@ this.clicked =false;
     }
     else if(currShape=="circle"){
         const shape:Shape ={type:"circle",
+             id:crypto.randomUUID(),
           radius :Math.max(width,height)/2 ,
         centerX:this.startX +  Math.max(width,height)/2,
         centerY:this.startY+ Math.max(width,height)/2,
@@ -221,6 +210,7 @@ this.clicked =false;
       else if(currShape=="arrow"){
        const shape:Shape={
         type:"arrow",
+           id:crypto.randomUUID(),
         startX:this.startX,
         startY:this.startY,
         endX:e.clientX,
@@ -237,12 +227,14 @@ this.clicked =false;
       }else if(this.currShape=="pencil"){
       const shape:Shape={
         type:"pencil",
+           id:crypto.randomUUID(),
         points:this.pencilPointsArray
       }
         this.existingShapes.push(shape);
      this.socket.send(
       JSON.stringify({
         type:"chat",
+           id:crypto.randomUUID(),
         roomId:this.roomId,
         message: JSON.stringify(shape)
       })
@@ -251,6 +243,7 @@ this.clicked =false;
       }else if(this.currShape=="diamond"){
     const shape:Shape={
      type:"diamond",
+        id:crypto.randomUUID(),
      startX:this.startX,
      startY:this.startY,
      endX:e.clientX,
@@ -263,21 +256,32 @@ this.clicked =false;
         roomId:this.roomId,
         message: JSON.stringify(shape)
       })
-)
+)///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
       }else if(this.currShape=="eraser"){
-        const shape:Shape={
-        type:"eraser",
-        eraserArray:this.eraserPointsArray
+        let x=e.clientX
+        let y=e.clientY
+        let id=""
+        for(let i=this.existingShapes.length-1;i>=0;i++){
+          const shape=this.existingShapes[i]
+           if(!shape){
+            continue ;
+           }
+           let bool= this.isPointInsideShape(shape,x,y)
+           if(bool){
+              id = shape.id
+            this.existingShapes.splice(i,1);
+            this.clearCanvas()
+            break;
+           }
         }
-        this.existingShapes.push(shape)
-
-this.socket.send(JSON.stringify({
-  type:"chat",
-  roomId:this.roomId,
-  message:JSON.stringify(shape)
-}))
-
-this.eraserPointsArray=[]
+          this.socket.send(
+      JSON.stringify({
+        type:"deleteChat",
+        roomId:this.roomId,
+        id:id
+        
+      })
+)
       }
 }
 mouseMoveHandler=(e:any)=>{
@@ -334,26 +338,6 @@ for(let i=1;i<this.pencilPointsArray.length;i++){
   this.ctx.closePath()
   this.ctx.strokeStyle="white"
   this.ctx.stroke()
-}else if(this.currShape=="eraser"){
-
-this.eraserPointsArray.push({startX:e.clientX,startY:e.clientY})
-
-this.ctx.beginPath()
-this.ctx.globalCompositeOperation = "destination-out"
-this.ctx.lineWidth = 20
-
-for(let i=1;i<this.eraserPointsArray.length;i++){
- const prev=this.eraserPointsArray[i-1]
- const curr=this.eraserPointsArray[i]
-
- if(!prev || !curr) continue
-
- this.ctx.moveTo(prev.startX,prev.startY)
- this.ctx.lineTo(curr.startX,curr.startY)
-}
-
-this.ctx.stroke()
-this.ctx.globalCompositeOperation="source-over"
 }
 }
 }
@@ -366,5 +350,80 @@ initMouseHandler(){
 
   this.canvas.addEventListener("mousemove",this.mouseMoveHandler)
 
+}
+//////////////////////////////////////////////////////////////////////////////////    change type of shape
+isPointInsideShape(shape:any,x:number,y:number){
+if(shape.type=="rect"){
+  console.log("hi")
+           return(
+            
+            x>=shape.x && y>=shape.y && x<=shape.x+shape.width && y<=shape.y+shape.height
+           )
+        
+}else if(shape.type=="circle"){
+         let dx= x-shape.centerX
+         let dy=y-shape.centerY
+         let rad= Math.sqrt(dx*dx+dy*dy)
+       return rad<=shape.radius
+}else if(shape.type=="arrow"){
+
+ let x1 = shape.startX
+ let y1 = shape.startY
+ let x2 = shape.endX
+ let y2 = shape.endY
+
+ let numerator =
+  (y2 - y1) * x -
+  (x2 - x1) * y +
+  (x2 * y1) -
+  (y2 * x1)
+
+ let denominator = Math.sqrt(
+  (y2 - y1) * (y2 - y1) +
+  (x2 - x1) * (x2 - x1)
+ )
+if(denominator === 0){
+  return false
+ }
+ let distance = Math.abs(numerator / denominator)
+
+ const tolerance = 5
+
+ if(
+  x >= Math.min(x1,x2) &&
+  x <= Math.max(x1,x2) &&
+  y >= Math.min(y1,y2) &&
+  y <= Math.max(y1,y2) &&
+  distance <= tolerance
+ ){
+  return true
+ }
+
+ return false
+}else if(shape.type=="pencil"){
+  let tolerance=3
+   const elemFound=shape.points.find((e:{startX:number,startY:number})=>Math.abs(e.startX-x)<=tolerance && Math.abs(e.startY-y)<=tolerance)
+   if(elemFound!==undefined){
+    return true;
+   }else{
+    return false;
+   }
+}else if(shape.type=="diamond"){
+const centerX = (shape.startX + shape.endX) / 2
+ const centerY = (shape.startY + shape.endY) / 2
+
+ const halfWidth = Math.abs(shape.endX - shape.startX) / 2
+ const halfHeight = Math.abs(shape.endY - shape.startY) / 2
+
+ const dx = Math.abs(x - centerX)
+ const dy = Math.abs(y - centerY)
+ // denominator can become 0 can cause infinity
+if(halfWidth === 0 || halfHeight === 0){
+   return false
+ }
+
+ return (dx / halfWidth + dy / halfHeight) <= 1
+
+}
 }
 }
