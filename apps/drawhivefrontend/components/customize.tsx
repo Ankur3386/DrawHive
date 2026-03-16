@@ -1,13 +1,13 @@
 import React from "react";
 
-const Customize = () => {
+const Customize = ({setBorderColor,setfillColor,setLineDash,setWidth}:{setBorderColor:(color:string)=>void,setfillColor:(color:string)=>void,setLineDash:(dash:[number,number])=>void,setWidth:(size:number)=>void}) => {
   const colors = [
-    "bg-orange-500",
-    "bg-blue-500",
-    "bg-green-500",
-    "bg-black",
-    "bg-white",
-    "bg-slate-500",
+    "orange-500",
+    "blue-500",
+    "green-500",
+    "black",
+    "white",
+    "slate-500",
   ];
 
   return (
@@ -21,7 +21,12 @@ const Customize = () => {
           {colors.map((color, id) => (
             <div
               key={id}
-              className={`w-6 h-6 sm:w-8 sm:h-7 ${color} border rounded-md cursor-pointer`}
+              onClick={()=>{
+                   setBorderColor(`${color}`)
+              }
+               
+              }
+              className={`w-6 h-6 sm:w-8 sm:h-7 bg-${color} border rounded-md cursor-pointer`}
             ></div>
           ))}
         </div>
@@ -34,7 +39,12 @@ const Customize = () => {
           {colors.map((color, id) => (
             <div
               key={id}
-              className={`w-6 h-6 sm:w-7 sm:h-7 ${color} border rounded-md cursor-pointer`}
+                onClick={()=>{
+                   setfillColor(`${color}`)
+              }
+               
+              }
+              className={`w-6 h-6 sm:w-7 sm:h-7 bg-${color} border rounded-md cursor-pointer`}
             ></div>
           ))}
         </div>
@@ -47,6 +57,9 @@ const Customize = () => {
           {[1, 2, 3].map((size, idx) => (
             <div
               key={idx}
+              onClick={()=>{
+                setWidth(size)
+              }}
               className="w-6 h-6 sm:w-7 sm:h-7 border rounded-md cursor-pointer flex items-center justify-center hover:bg-purple-300"
             >
               <div
@@ -62,13 +75,19 @@ const Customize = () => {
         <div className="text-gray-500 font-semibold text-sm sm:text-sm">Stroke Style</div>
         <div className="flex gap-4 sm:gap-6">
           <div className="w-6 h-6 sm:w-7 sm:h-7 border rounded-md cursor-pointer flex items-center justify-center hover:bg-purple-300">
-            <div className="w-3 sm:w-4 border-b-2 bg-black rounded-xl"></div>
+            <div onClick={()=>{
+              setLineDash([0,0])
+            }} className="w-3 sm:w-4 border-b-2 bg-black rounded-xl"></div>
           </div>
           <div className="w-6 h-6 sm:w-7 sm:h-7 border rounded-md cursor-pointer flex items-center justify-center hover:bg-purple-300">
-            <div className="w-3 sm:w-4 border-b-2 border-dashed bg-black rounded-xl"></div>
+            <div onClick={()=>{
+              setLineDash([10,2])
+            }}className="w-3 sm:w-4 border-b-2 border-dashed bg-black rounded-xl"></div>
           </div>
           <div className="w-6 h-6 sm:w-7 sm:h-7 border rounded-md cursor-pointer flex items-center justify-center hover:bg-purple-300">
-            <div className="w-3 sm:w-4 border-b-2 border-dotted bg-black rounded-xl"></div>
+            <div onClick={()=>{
+              setLineDash([4,1])
+            }}className="w-3 sm:w-4 border-b-2 border-dotted bg-black rounded-xl"></div>
           </div>
         </div>
       </div>

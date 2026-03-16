@@ -1,14 +1,19 @@
 import { Tool } from "../../../components/Canvas";
 import { getExistingShapes } from "./http";
-
- type Shape={
+type Style={
+  lineWidth:number,
+  borderColor:string,
+  fillColor:string,
+  lineDash:[number,number],
+}
+ type Shape=({
     type:"rect",
     id:string,
     x:number,
     y:number,
     width:number,
     height:number
- }|{
+ }& Style)|{
     type:"circle",
      id:string,
     centerX:number,
@@ -35,6 +40,13 @@ endY:number;
   startY:number,
   endX:number,
   endY:number
+ }|{
+  type:"line",
+  id:string,
+ startX:number,
+  startY:number,
+  endX:number,
+  endY:number
  }
 
 
@@ -48,8 +60,12 @@ socket:WebSocket ;
 clicked:boolean ;
 startX:number;
 startY:number;
-private currShape:Tool ="circle"
-private pencilPointsArray:{startX:number,startY:number}[]=[]
+private currShape:Tool ="circle";
+private pencilPointsArray:{startX:number,startY:number}[]=[];
+private borderColor:string="white";
+private lineWidth:number=1;
+private fillColor:string="black";
+private lineDash:[number,number]=[0,0]
  
 constructor(canvas:HTMLCanvasElement,roomId:string,socket:WebSocket){
 this.canvas=canvas ;
@@ -75,8 +91,16 @@ this.canvas.removeEventListener("mousedown",this.mouseDownHandler
   this.canvas.removeEventListener("mousemove",this.mouseMoveHandler)
 
 }
-setTool(tool:"circle"|"pencil"|"rect"|"eraser"|"arrow"|"diamond"){
+setTool(tool:"circle"|"pencil"|"rect"|"eraser"|"arrow"|"diamond"|"line"){
 this.currShape=tool ;
+}
+
+setStyle(borderColor:string,fillColor:string,lineDash:[number,number],lineWidth:number){
+  console.log("color",typeof(borderColor))
+this.borderColor=borderColor
+this.fillColor=fillColor
+this.lineDash=lineDash
+this.lineWidth=lineWidth
 }
 async  init(){
   
@@ -105,7 +129,7 @@ clearCanvas(){
  this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
  this.existingShapes.map((shape)=>{
    if(shape.type==="rect"){
-    this.ctx.strokeStyle="rgba(255,255,255)"
+    this.ctx.strokeStyle=shape.borderColor
  this.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height)
 
    }
@@ -156,6 +180,13 @@ clearCanvas(){
   this.ctx.closePath()
   this.ctx.strokeStyle="white"
   this.ctx.stroke()
+   }else if(shape.type==="line"){
+   this.ctx.beginPath();
+   this.ctx.moveTo(shape.startX,shape.startY)
+   this.ctx.lineTo(shape.endX,shape.endY)
+  
+  this.ctx.strokeStyle="white"
+  this.ctx.stroke()
    }
  })
  
@@ -166,7 +197,37 @@ mouseDownHandler=(e:any)=>{
      this.startY =e.clientY
      if(this.currShape=="pencil"){
       this.pencilPointsArray.push({startX:this.startX,startY:this.startY})
-     }
+     }else if(this.currShape=="eraser"){
+        let x=e.clientX
+        let y=e.clientY
+        console.log(x,y)
+        let id=""
+        for(let i=this.existingShapes.length-1;i>=0;i--){
+          const shape=this.existingShapes[i]
+           if(!shape){
+            continue ;
+           }
+           let bool= this.isPointInsideShape(shape,x,y)
+           console.log(bool,"jjj")
+             console.log("hi")
+           if(bool){
+              id = shape.id
+            this.existingShapes.splice(i,1);
+            this.clearCanvas()
+            break;
+           }
+        }
+        if(id!==""){
+             this.socket.send(
+      JSON.stringify({
+        type:"deleteChat",
+        roomId:this.roomId,
+        id:id  
+      })
+)
+        }
+     
+      }
 }
 mouseUpHandler=(e:any)=>{
 this.clicked =false;
@@ -176,13 +237,20 @@ this.clicked =false;
     const currShape = this.currShape
     console.log(currShape)
     if(currShape=="rect"){
+     
       const shape:Shape ={type:"rect",
         id:crypto.randomUUID(),
         x:this.startX,
         y:this.startY,
         width,
-        height
+        height,
+      borderColor:this.borderColor,
+      fillColor:this.fillColor,
+    lineWidth:this.lineWidth,
+      lineDash:this.lineDash
+    
     }
+  
     this.existingShapes.push(shape) ;
     this.socket.send(
       JSON.stringify({
@@ -256,30 +324,22 @@ this.clicked =false;
         roomId:this.roomId,
         message: JSON.stringify(shape)
       })
-)///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-      }else if(this.currShape=="eraser"){
-        let x=e.clientX
-        let y=e.clientY
-        let id=""
-        for(let i=this.existingShapes.length-1;i>=0;i++){
-          const shape=this.existingShapes[i]
-           if(!shape){
-            continue ;
-           }
-           let bool= this.isPointInsideShape(shape,x,y)
-           if(bool){
-              id = shape.id
-            this.existingShapes.splice(i,1);
-            this.clearCanvas()
-            break;
-           }
-        }
-          this.socket.send(
+)
+      }else if(this.currShape=="line"){
+        const shape:Shape={
+      type:"line",
+      id:crypto.randomUUID(),
+     startX:this.startX,
+     startY:this.startY,
+     endX:e.clientX,
+     endY:e.clientY
+    }
+     this.existingShapes.push(shape);
+      this.socket.send(
       JSON.stringify({
-        type:"deleteChat",
+        type:"chat",
         roomId:this.roomId,
-        id:id
-        
+        message: JSON.stringify(shape)
       })
 )
       }
@@ -291,7 +351,7 @@ const width=e.clientX-this.startX ;
      //@ts-ignore
    const currShape =this.currShape
 this.clearCanvas();
-this.ctx.strokeStyle="rgba(255,255,255)"
+this.ctx.strokeStyle=this.borderColor
 if(currShape=="rect"){
 this.ctx.strokeRect(this.startX,this.startY,Math.abs(width),height)
 }
@@ -327,6 +387,7 @@ for(let i=1;i<this.pencilPointsArray.length;i++){
  this.ctx.strokeStyle="white"
    this.ctx.stroke()
 }else if(this.currShape=="diamond"){
+
  const radius =Math.max(width,height)/2 ;
   const centerX = this.startX + radius ;
   const centerY = this.startY +radius ;
@@ -338,7 +399,20 @@ for(let i=1;i<this.pencilPointsArray.length;i++){
   this.ctx.closePath()
   this.ctx.strokeStyle="white"
   this.ctx.stroke()
+}else if(this.currShape=="line"){
+
+this.ctx.beginPath();
+
+// Set a start-point
+this.ctx.moveTo(this.startX,this.startY);
+
+// Set an end-point
+this.ctx.lineTo(e.clientX,e.clientY);
+
+// Draw it
+this.ctx.stroke();
 }
+
 }
 }
 initMouseHandler(){
@@ -354,7 +428,7 @@ initMouseHandler(){
 //////////////////////////////////////////////////////////////////////////////////    change type of shape
 isPointInsideShape(shape:any,x:number,y:number){
 if(shape.type=="rect"){
-  console.log("hi")
+  console.log("rect")
            return(
             
             x>=shape.x && y>=shape.y && x<=shape.x+shape.width && y<=shape.y+shape.height
@@ -421,7 +495,6 @@ const centerX = (shape.startX + shape.endX) / 2
 if(halfWidth === 0 || halfHeight === 0){
    return false
  }
-
  return (dx / halfWidth + dy / halfHeight) <= 1
 
 }

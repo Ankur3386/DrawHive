@@ -2,12 +2,12 @@
 import { useEffect, useRef, useState } from "react";
 import { IoMdMenu } from "react-icons/io";
 import { IconButton } from "./IconButton";
-import {Circle, Pencil, RectangleHorizontalIcon,Eraser,ArrowBigRight} from "lucide-react"
+import {Circle, Pencil, RectangleHorizontalIcon,Eraser, Minus} from "lucide-react"
 import { FaArrowRightLong } from "react-icons/fa6";
 import { LuDiamond } from "react-icons/lu";
 import { Game } from "../src/app/draw/Game";
 import Customize from "./customize";
-export type Tool ="circle"|"rect"|"pencil"|"eraser"|"arrow"|"diamond"
+export type Tool ="circle"|"rect"|"pencil"|"eraser"|"arrow"|"diamond"|"eraser"|"line"
 export function Canvas({roomId,socket}:{
 roomId:string,
 socket:WebSocket
@@ -17,6 +17,10 @@ socket:WebSocket
      const[game,setGame]=useState<Game>()
      const[currShape,setShape]=useState<Tool>("circle")
      const[customize,setCustomize]=useState(false)
+     const[borderColor,setBorderColor]=useState("white")
+     const[fillColor,setfillColor]=useState("black")
+     const[lineWidth,setLineWidth]=useState(1)
+     const[lineDash,setLineDash]=useState<[number,number]>([0,0])
  useEffect(()=>{
 if(canvasRef.current){
  const canvas= canvasRef.current
@@ -36,6 +40,10 @@ if(canvasRef.current){
     game?.setTool(currShape)//done to remove ugly logic like window.setShape  now we have a reference to game  and we are seting currShape
   
     },[currShape,game])
+    useEffect(()=>{
+    game?.setStyle(borderColor,fillColor,lineDash,lineWidth)
+  
+    },[borderColor,fillColor,lineWidth,lineDash])
     return(
  <div className="h-[100vh] overflow-hidden relative">
 
@@ -45,22 +53,23 @@ if(canvasRef.current){
     setCustomize(prev=>!prev)
   }} />
   {
-    customize && <Customize/>
+    customize && <Customize setBorderColor={setBorderColor} setfillColor={setfillColor} setWidth={setLineWidth} setLineDash={setLineDash}/>
   }
 
-  <TopBar currShape={currShape} setShape={setShape} setCustomize={setCustomize} />
+  <TopBar currShape={currShape} setShape={setShape} setCustomize={setCustomize}  />
 
 </div>
     )
 }
 function TopBar({currShape,setShape,setCustomize}:{currShape:Tool,setShape:(s:Tool)=>void ,setCustomize:(prev:boolean)=>void}){
   return(
- <div className="fixed  top-3 left-1/2 -translate-x-1/2 bg-slate-800 rounded-2xl ">
+ <div className="fixed h-14  top-3 left-1/2 -translate-x-1/2 bg-slate-800 rounded-2xl ">
   <div className="flex gap-3">
    <IconButton icon={<Pencil/>} 
    onClick={()=>{
     setShape("pencil")
     setCustomize(true)
+    
    }}
    activated={currShape==="pencil"}/>
  <IconButton icon={<RectangleHorizontalIcon/>}  onClick={()=>{
@@ -78,6 +87,11 @@ function TopBar({currShape,setShape,setCustomize}:{currShape:Tool,setShape:(s:To
       setCustomize(false)
    }}
    activated={currShape==="eraser"}/>
+ <IconButton icon={<Minus />} className={'p-3'} onClick={()=>{
+    setShape("line")
+      setCustomize(true)
+   }}
+   activated={currShape==="line"}/>
  <IconButton icon={<FaArrowRightLong />} className={'p-3'} onClick={()=>{
     setShape("arrow")
       setCustomize(true)

@@ -6,7 +6,7 @@ export  function IconButton({icon,onClick,activated,className} : {
     className?:string
 }){
 return(
-    <div className={`pointer m-2 p-2 rounded-xl border  border-slate-800 hover:bg-gray-500 ${activated ?"text-green-500":"text-white"} ${className}`}  onClick={onClick}>
+    <div className={`pointer my-1  mx-2 p-2 rounded-xl border  border-slate-800 hover:bg-gray-500 ${activated ?"text-green-500":"text-white"} ${className}`}  onClick={onClick}>
         {icon}
     </div>
 )
