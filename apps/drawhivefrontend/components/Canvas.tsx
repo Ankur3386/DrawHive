@@ -19,8 +19,8 @@ socket:WebSocket
      const[customize,setCustomize]=useState(false)
      const[borderColor,setBorderColor]=useState("white")
      const[fillColor,setfillColor]=useState("black")
-     const[lineWidth,setLineWidth]=useState(1)
-     const[lineDash,setLineDash]=useState<[number,number]>([0,0])
+     const[lineWidth,setLineWidth]=useState<number>(1)
+     const[lineDash,setLineDash]=useState<{x:number,y:number}>({x:0,y:0})
  useEffect(()=>{
 if(canvasRef.current){
  const canvas= canvasRef.current

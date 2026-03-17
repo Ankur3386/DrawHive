@@ -13,41 +13,41 @@ type Style={
     y:number,
     width:number,
     height:number
- }& Style)|{
+ }& Style)|({
     type:"circle",
      id:string,
     centerX:number,
     centerY:number
     radius:number
- }|{
+ }&Style)|({
   type:"pencil";
    id:string,
   points:{startX:number ,startY:number}[];
- }|{
+ }&Style)|{
   type:"eraser";
   id:string,
- }|{
+ }|({
 type:"arrow";
  id:string,
 startX:number;
 startY:number;
 endX:number;
 endY:number;
- }|{
+ }&Style)|({
   type:"diamond",
    id:string,
   startX:number,
   startY:number,
   endX:number,
   endY:number
- }|{
+ }&Style)|({
   type:"line",
   id:string,
  startX:number,
   startY:number,
   endX:number,
   endY:number
- }
+ }&Style)
 
 
 export class Game{
@@ -95,12 +95,13 @@ setTool(tool:"circle"|"pencil"|"rect"|"eraser"|"arrow"|"diamond"|"line"){
 this.currShape=tool ;
 }
 
-setStyle(borderColor:string,fillColor:string,lineDash:[number,number],lineWidth:number){
-  console.log("color",typeof(borderColor))
+setStyle(borderColor:string,fillColor:string,lineDash:{x:number,y:number},lineWidth:number){
 this.borderColor=borderColor
 this.fillColor=fillColor
-this.lineDash=lineDash
+console.log(lineDash)
+this.lineDash=[lineDash.x,lineDash.y]
 this.lineWidth=lineWidth
+
 }
 async  init(){
   
@@ -128,15 +129,23 @@ clearCanvas(){
  this.ctx.fillStyle="rgba(0,0,0)"
  this.ctx.fillRect(0,0,this.canvas.width,this.canvas.height)
  this.existingShapes.map((shape)=>{
-   if(shape.type==="rect"){
-    this.ctx.strokeStyle=shape.borderColor
- this.ctx.strokeRect(shape.x,shape.y,shape.width,shape.height)
-
-   }
+ if(shape.type === "rect") {
+  this.ctx.lineWidth = shape.lineWidth
+  this.ctx.setLineDash(shape.lineDash)
+  this.ctx.fillStyle = shape.fillColor
+  this.ctx.fillRect(shape.x, shape.y, shape.width, shape.height)
+  this.ctx.beginPath()  
+  this.ctx.strokeStyle = shape.borderColor
+  this.ctx.strokeRect(shape.x, shape.y, shape.width, shape.height)
+}
    else if(shape.type==="circle"){
-    this.ctx.strokeStyle="rgba(255,255,255)"
     this.ctx.beginPath()
+     this.ctx.lineWidth=shape.lineWidth
+     this.ctx.setLineDash(shape.lineDash)
     this.ctx.arc(shape.centerX,shape.centerY,shape.radius,0,2*Math.PI);
+    this.ctx.fillStyle=shape.fillColor
+    this.ctx.fill()
+    this.ctx.strokeStyle=shape.borderColor
     this.ctx.stroke();
    }else if(shape.type==="arrow"){
      var headlen = 14; // length of head in pixels
@@ -144,15 +153,20 @@ clearCanvas(){
   var dy = shape.endY-shape.startY;
   var angle = Math.atan2(dy, dx);
   this.ctx.beginPath();
+   this.ctx.lineWidth=shape.lineWidth
+   this.ctx.setLineDash(shape.lineDash)
   this.ctx.moveTo(shape.startX, shape.startY);
   this.ctx.lineTo(shape.endX, shape.endY);
   this.ctx.lineTo(shape.endX - headlen * Math.cos(angle - Math.PI / 6), shape.endY - headlen * Math.sin(angle - Math.PI / 6));
   this.ctx.moveTo(shape.endX, shape.endY );
   this.ctx.lineTo(shape.endX - headlen * Math.cos(angle + Math.PI / 6), shape.endY  - headlen * Math.sin(angle + Math.PI / 6))
+  this.ctx.strokeStyle=shape.borderColor
   this.ctx.stroke();
    }
    else if(shape.type==="pencil"){
    this.ctx.beginPath();
+    this.ctx.lineWidth=shape.lineWidth
+    this.ctx.setLineDash(shape.lineDash)
    for(let i=1;i<shape.points.length;i++){
      const prev = shape.points[i-1]
   const curr = shape.points[i] 
@@ -160,7 +174,7 @@ clearCanvas(){
   this.ctx.moveTo(prev.startX, prev.startY)
   this.ctx.lineTo(curr.startX, curr.startY)
    }
-
+   this.ctx.strokeStyle=shape.borderColor
    this.ctx.stroke()
    }
    else if(shape.type==="diamond"){
@@ -170,22 +184,27 @@ clearCanvas(){
   const centerX = shape.startX + radius ;
   const centerY = shape.startY +radius ;
   this.ctx.beginPath();
+   this.ctx.lineWidth=shape.lineWidth
+   this.ctx.setLineDash(shape.lineDash)
    this.ctx.moveTo(centerX, shape.startY)//top
      this.ctx.lineTo(shape.startX + width, centerY)//right
   this.ctx.lineTo(centerX, shape.startY + height)//bottom
 
     this.ctx.lineTo(shape.startX, centerY)//left
 
-
-  this.ctx.closePath()
-  this.ctx.strokeStyle="white"
+this.ctx.fillStyle=shape.fillColor
+this.ctx.fill()
+    this.ctx.strokeStyle=shape.borderColor
   this.ctx.stroke()
+   this.ctx.closePath()
    }else if(shape.type==="line"){
    this.ctx.beginPath();
+    this.ctx.lineWidth=shape.lineWidth;
+    this.ctx.setLineDash(shape.lineDash)
    this.ctx.moveTo(shape.startX,shape.startY)
    this.ctx.lineTo(shape.endX,shape.endY)
   
-  this.ctx.strokeStyle="white"
+  this.ctx.strokeStyle=shape.borderColor
   this.ctx.stroke()
    }
  })
@@ -195,12 +214,13 @@ mouseDownHandler=(e:any)=>{
  this.clicked = true;
    this.startX=e.clientX;
      this.startY =e.clientY
+     console.log(this.lineDash)
      if(this.currShape=="pencil"){
       this.pencilPointsArray.push({startX:this.startX,startY:this.startY})
      }else if(this.currShape=="eraser"){
         let x=e.clientX
         let y=e.clientY
-        console.log(x,y)
+     
         let id=""
         for(let i=this.existingShapes.length-1;i>=0;i--){
           const shape=this.existingShapes[i]
@@ -208,8 +228,7 @@ mouseDownHandler=(e:any)=>{
             continue ;
            }
            let bool= this.isPointInsideShape(shape,x,y)
-           console.log(bool,"jjj")
-             console.log("hi")
+           
            if(bool){
               id = shape.id
             this.existingShapes.splice(i,1);
@@ -235,7 +254,7 @@ this.clicked =false;
     const height =e.clientY-this.startY;
     //@ts-ignore
     const currShape = this.currShape
-    console.log(currShape)
+   
     if(currShape=="rect"){
      
       const shape:Shape ={type:"rect",
@@ -266,6 +285,10 @@ this.clicked =false;
           radius :Math.max(width,height)/2 ,
         centerX:this.startX +  Math.max(width,height)/2,
         centerY:this.startY+ Math.max(width,height)/2,
+        fillColor:this.fillColor,
+        borderColor:this.borderColor,
+        lineDash:this.lineDash,
+        lineWidth:this.lineWidth
     }
     this.existingShapes.push(shape)
      
@@ -282,7 +305,11 @@ this.clicked =false;
         startX:this.startX,
         startY:this.startY,
         endX:e.clientX,
-        endY:e.clientY
+        endY:e.clientY,
+         fillColor:this.fillColor,
+        borderColor:this.borderColor,
+        lineDash:this.lineDash,
+        lineWidth:this.lineWidth
        }
     this.existingShapes.push(shape);
      this.socket.send(
@@ -296,7 +323,11 @@ this.clicked =false;
       const shape:Shape={
         type:"pencil",
            id:crypto.randomUUID(),
-        points:this.pencilPointsArray
+        points:this.pencilPointsArray,
+         fillColor:this.fillColor,
+        borderColor:this.borderColor,
+        lineDash:this.lineDash,
+        lineWidth:this.lineWidth
       }
         this.existingShapes.push(shape);
      this.socket.send(
@@ -315,7 +346,11 @@ this.clicked =false;
      startX:this.startX,
      startY:this.startY,
      endX:e.clientX,
-     endY:e.clientY
+     endY:e.clientY,
+      fillColor:this.fillColor,
+        borderColor:this.borderColor,
+        lineDash:this.lineDash,
+        lineWidth:this.lineWidth
     }
     this.existingShapes.push(shape);
       this.socket.send(
@@ -332,7 +367,11 @@ this.clicked =false;
      startX:this.startX,
      startY:this.startY,
      endX:e.clientX,
-     endY:e.clientY
+     endY:e.clientY,
+      fillColor:this.fillColor,
+        borderColor:this.borderColor,
+        lineDash:this.lineDash,
+        lineWidth:this.lineWidth
     }
      this.existingShapes.push(shape);
       this.socket.send(
@@ -350,9 +389,14 @@ const width=e.clientX-this.startX ;
  const height =e.clientY -this.startY ;
      //@ts-ignore
    const currShape =this.currShape
+ 
 this.clearCanvas();
-this.ctx.strokeStyle=this.borderColor
+  this.ctx.strokeStyle=this.borderColor
+  this.ctx.fillStyle=this.fillColor
+this.ctx.lineWidth=this.lineWidth
+this.ctx.setLineDash(this.lineDash)
 if(currShape=="rect"){
+ this.ctx.fillRect(this.startX,this.startY,Math.abs(width),height)
 this.ctx.strokeRect(this.startX,this.startY,Math.abs(width),height)
 }
 else if(currShape=="circle"){
@@ -361,6 +405,9 @@ else if(currShape=="circle"){
   const centerY = this.startY +radius ;
 this.ctx.beginPath();
 this.ctx.arc(centerX,centerY,Math.abs(radius),0,2*Math.PI) ;
+this.ctx.fillStyle=this.fillColor;
+this.ctx.fill()
+this.ctx.strokeStyle=this.borderColor
 this.ctx.stroke();
 }else if(this.currShape=="arrow"){
     var headlen = 14; // length of head in pixels
@@ -373,6 +420,7 @@ this.ctx.stroke();
   this.ctx.lineTo(e.clientX - headlen * Math.cos(angle - Math.PI / 6), e.clientY - headlen * Math.sin(angle - Math.PI / 6));
   this.ctx.moveTo(e.clientX, e.clientY );
   this.ctx.lineTo(e.clientX - headlen * Math.cos(angle + Math.PI / 6), e.clientY  - headlen * Math.sin(angle + Math.PI / 6))
+  this.ctx.strokeStyle=this.borderColor
   this.ctx.stroke();
 } else if(this.currShape=="pencil"){
 this.pencilPointsArray.push({startX:e.clientX,startY:e.clientY})
@@ -384,7 +432,7 @@ for(let i=1;i<this.pencilPointsArray.length;i++){
   this.ctx.moveTo(prev.startX, prev.startY)
   this.ctx.lineTo(curr.startX, curr.startY)
 }
- this.ctx.strokeStyle="white"
+  this.ctx.strokeStyle=this.borderColor
    this.ctx.stroke()
 }else if(this.currShape=="diamond"){
 
@@ -397,7 +445,9 @@ for(let i=1;i<this.pencilPointsArray.length;i++){
   this.ctx.lineTo(centerX, this.startY + height)
   this.ctx.lineTo(this.startX, centerY)
   this.ctx.closePath()
-  this.ctx.strokeStyle="white"
+ this.ctx.strokeStyle=this.borderColor
+ this.ctx.fillStyle=this.fillColor;
+this.ctx.fill()
   this.ctx.stroke()
 }else if(this.currShape=="line"){
 
@@ -409,7 +459,7 @@ this.ctx.moveTo(this.startX,this.startY);
 // Set an end-point
 this.ctx.lineTo(e.clientX,e.clientY);
 
-// Draw it
+ this.ctx.strokeStyle=this.borderColor
 this.ctx.stroke();
 }
 
@@ -428,7 +478,8 @@ initMouseHandler(){
 //////////////////////////////////////////////////////////////////////////////////    change type of shape
 isPointInsideShape(shape:any,x:number,y:number){
 if(shape.type=="rect"){
-  console.log("rect")
+ 
+
            return(
             
             x>=shape.x && y>=shape.y && x<=shape.x+shape.width && y<=shape.y+shape.height
