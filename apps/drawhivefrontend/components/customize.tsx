@@ -6,7 +6,7 @@ const Customize = ({setBorderColor,setfillColor,setLineDash,setWidth}:{setBorder
     { bg:"bg-blue-500", text:"#4299e1"},
     { bg:"bg-green-700", text:"#388E3C"},
     { bg:"bg-white", text:"white"},
-    { bg:"bg-black", text:"black"},
+    { bg:"bg-transparent", text:"transparent"},
     { bg:"bg-slate-600", text:"#45556c"},
   ];
 const [selectedStroke, setSelectedStroke] = useState<number>();

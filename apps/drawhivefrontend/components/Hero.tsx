@@ -1,7 +1,8 @@
 import React from 'react'
 
-const page = () => {
-  return (
+
+const Hero = () => {
+   return (
     <div className="min-h-screen flex items-center justify-center bg-[#ffffff] font relative">
 
 
@@ -26,17 +27,19 @@ const page = () => {
       </div>
 
    
-      <div className="flex flex-col lg:flex-row items-center gap-25 w-full max-w-5xl px-4">
+      <div className="flex flex-col lg:flex-row items-center gap-25 w-full max-w-5xl px-4  justify-center">
 
       
         <div className="text-6xl text-black z-10">
           𝒟𝓇𝒶𝓌𝐻𝒾𝓋𝑒
+          <div className='bg-black h-2 mt-1 '></div>
         </div>
-
+         
       </div>
 
     </div>
   )
+
 }
 
-export default page
+export default Hero

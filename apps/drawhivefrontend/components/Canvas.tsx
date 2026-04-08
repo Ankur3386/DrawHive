@@ -18,7 +18,7 @@ socket:WebSocket
      const[currShape,setShape]=useState<Tool>("circle")
      const[customize,setCustomize]=useState(false)
      const[borderColor,setBorderColor]=useState("white")
-     const[fillColor,setfillColor]=useState("black")
+     const[fillColor,setfillColor]=useState("transparent")
      const[lineWidth,setLineWidth]=useState<number>(1)
      const[lineDash,setLineDash]=useState<{x:number,y:number}>({x:0,y:0})
  useEffect(()=>{
