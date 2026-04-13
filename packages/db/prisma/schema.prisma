@@ -22,23 +22,33 @@ model User{
   photo String?
   rooms Room[]
   chats Chat[]
+  roomMember RoomMember[]
 }
 
 model Chat{
-id Int @id @default(autoincrement())
+id String @id @default(uuid())   
 message String 
 userId String
-roomId Int
+roomId String
 room Room @relation(fields: [roomId], references: [id])
 user User @relation( fields:[userId], references: [id])
 }
 
 
 model Room{
-id Int @id @default(autoincrement())
+id String @id @default(uuid())
 createdAt DateTime @default(now())
 slug String @unique
 adminId String
-user   User @relation(fields: [adminId], references: [id])
+admin   User @relation(fields: [adminId], references: [id])
 chats Chat[]
+roomMember RoomMember[]
+}
+model RoomMember{
+  id String @id @default(uuid())
+  roomId String
+  userId String
+  room Room @relation(fields: [roomId],references: [id])
+  user User @relation(fields: [userId],references: [id])
+  joinedAt DateTime @default(now())
 }

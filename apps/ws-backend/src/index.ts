@@ -13,8 +13,10 @@ const wss= new WebSocketServer({port:8080});
 console.log('hi');
 wss.on('connection',(ws,req)=>{
 const url=req.url;
+console.log("url:",url)
 const gettoken= new URLSearchParams(url?.split('?')[1]);
  const token = gettoken.get('token');
+ console.log(token)
  if(!token){
   ws.close();
   return;

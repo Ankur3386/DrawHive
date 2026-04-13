@@ -1,0 +1,40 @@
+name: deploy
+on:
+  push:
+    branches:
+     - main
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu
+    steps:
+     - name: checkout
+       uses: actions/checkout@v4
+     - name: dockerhub-login
+       uses: docker/login-action@v4
+       with:
+         username: ${{secrets.DOCKERHUB_USERNAME}}
+         password: ${{secrets.DOCKERHUB_TOKEN}}
+     - name: build-and-deploy
+       uses: docker/build-push-action@v2
+       with:
+         context: .
+         file: Dockerfile.fe 
+         push: true
+         tags: ${{secrets.DOCKERHUB_USERNAME}}/drawhive-fe:${{github.sha}}
+     - name: deploy
+       uses: appleboy/ssh-action@v1.0.3
+       with:
+         host: ${{secrets.VM_IP}}
+         key: ${{secrets.key}}
+         username: ubuntu
+         script: |
+            docker pull ${{secrets.DOCKERHUB_USERNAME}}/drawhive-fe:${{github.sha}}
+            docker create network drawhive-network || true
+            docker stop drawhive-fe || true
+            docker rm drawhive-fe || true
+            docker run \
+            --name drawhive-fe \
+            --network drawhive-network \
+            -e NEXT_PUBLIC_BACKEND_URL=${{secrets.NEXT_PUBLIC_BACKEND_URL}} \
+            -e NEXT_PUBLIC_WS_URL=${{secrets.NEXT_PUBLIC_WS_URL}} \
+            ${{secrets.DOCKERHUB_USERNAME}}/drawhive-fe:${{github.sha}}

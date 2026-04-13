@@ -4,7 +4,7 @@ import { RoomManager } from "./RoomManager"
 export class User{
     private ws:WebSocket
     userId:string
-   roomId?:number
+   roomId?:string
     constructor(ws:WebSocket,userId:string){
    this.ws=ws
    this.userId=userId
@@ -40,7 +40,7 @@ export class User{
               const message= parsedData.message;
               await prismaClient.chat.create({
                   data:{
-                      roomId:Number(roomId),
+                      roomId:roomId,
                       message,
                     userId:  this.userId
                     }
