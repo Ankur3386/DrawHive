@@ -1,7 +1,6 @@
-import { WebSocket } from "ws";
 import { User } from "./User";
 export class RoomManager{
-   rooms:Map<string,User[]>=new Map();
+  private rooms:Map<string,User[]>=new Map();
   private  static instance:RoomManager;
    private constructor(){  // due to private we can't call this outside so static is linked to class not object
     this.rooms=new Map();
@@ -31,5 +30,19 @@ export class RoomManager{
       const restUser=this.rooms.get(roomId)?.filter(x=>x.userId!=userId);
       restUser?.forEach((x)=>x.send(message))
    }
+broadCastRedis(roomId: string, message: string) {
+  const parsed = JSON.parse(message);
+  const users = this.rooms.get(roomId);
+
+  users?.forEach((user) => {
+    if (user.userId !== parsed.userId) {
+      if (parsed.type === "deleteChat") {
+        user.send({ type: "deleteChat", id: parsed.id, roomId });
+      } else {
+        user.send({ type: "chat", message: parsed.message, roomId });
+      }
+    }
+  });
+}
 
 }

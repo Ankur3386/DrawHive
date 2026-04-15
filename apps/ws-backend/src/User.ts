@@ -1,6 +1,8 @@
 import { WebSocket } from "ws"
 import {prismaClient} from '@repo/db/client'
 import { RoomManager } from "./RoomManager"
+import { PublishManager } from "./pubsub/publishManager"
+import { SubscriberManager } from "./pubsub/subscriberManager"
 export class User{
     private ws:WebSocket
     userId:string
@@ -31,9 +33,11 @@ export class User{
               }
               this.roomId=room.id;
           RoomManager.getInstance().addUser(this.roomId,this);
+          SubscriberManager.getInstance().subscribeUser(this.roomId,this.userId);
           break;
           case 'leave_room':
             RoomManager.getInstance().removeUser(this.roomId!,this.userId);
+            SubscriberManager.getInstance().unSubscribeUser(this.roomId!,this.userId);
             break;
           case 'chat':
               const roomId = parsedData.roomId;
@@ -45,20 +49,34 @@ export class User{
                     userId:  this.userId
                     }
                 })
-                RoomManager.getInstance().broadCast(roomId,this.userId,{
-                    type:"chat",
-                    message,
-                    roomId
-                })
+                // RoomManager.getInstance().broadCast(roomId,this.userId,{
+                //     type:"chat",
+                //     message,
+                //     roomId
+                // }) // as broadcasting through pubsub
+                PublishManager.getInstance().publishUser(roomId,{userId:this.userId,type: "chat",message})
                 break;
+                
           case 'deleteChat':
-             const id= parsedData.id
-             const rId=parsedData.roomId
-              await prismaClient.chat.delete({
-                  where:{
-                    id
-                  }
-                })
+                const id = parsedData.id;
+                const rId = parsedData.roomId;
+                
+                await prismaClient.chat.delete({
+                  where: { id }
+                });
+
+                // RoomManager.getInstance().broadCast(rId, this.userId, {
+                //   type: "deleteChat",
+                //   id,
+                //   roomId: rId
+                // });
+                PublishManager.getInstance().publishUser(rId, {
+                  userId: this.userId,
+                  type: "deleteChat",
+                  id
+                });
+                break;
+
           }
         })
     }

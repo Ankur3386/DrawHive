@@ -122,7 +122,15 @@ if(message.type=='chat'){
   //  clearCanvas(existingShapes,canvas,ctx) } // here there is a race condition case as when someone else add a new shape than my canvas drawing will go away and i have to move mouse  
   this.existingShapes.push(messageShape)
    this.clearCanvas() //we are doing state management as when we push a new shape than re-render  the canvas and add new shape just like how react do state  management as when a new state change than it re render  
-}
+} 
+else if (message.type === 'deleteChat') {
+      const id = message.id;
+      const index = this.existingShapes.findIndex(s => s.id === id);
+      if (index !== -1) {
+        this.existingShapes.splice(index, 1);
+        this.clearCanvas();
+      }
+    }
  }
 }
 
