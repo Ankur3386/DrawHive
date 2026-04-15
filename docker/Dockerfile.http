@@ -3,8 +3,8 @@ WORKDIR /app
 RUN corepack enable
 COPY ./package.json ./package.json
 COPY ./pnpm-workspace.yaml ./pnpm-workspace.yaml
-COPY ./pnpm-local.yaml ./pnpm-local.yaml
-COPY ./package ./package
+COPY ./pnpm-lock.yaml ./pnpm-lock.yaml
+COPY ./packages ./packages
 COPY ./apps/http-backend/package.json ./apps/http-backend/package.json
 RUN pnpm i
 COPY /apps/http-backend ./apps/http-backend

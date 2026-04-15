@@ -4,7 +4,7 @@ import jwt, { JwtPayload } from "jsonwebtoken"
 import dotenv from 'dotenv'
 dotenv.config()
 function verifyToken(token:string){
-const verifiedToken=jwt.verify(token,process.env.jwt_secret as string) as JwtPayload
+const verifiedToken=jwt.verify(token,process.env.JWT_SECRET as string) as JwtPayload
 if(verifiedToken){
     return  verifiedToken.id
 }
