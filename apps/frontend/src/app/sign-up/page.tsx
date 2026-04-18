@@ -108,20 +108,9 @@ export default function SignupPage() {
                     </h1>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 mb-4">
-                    {[["🌐", "Google"], ["🐙", "GitHub"]].map(([icon, name]) => (
-                      <button key={name}
-                        className="font-caveat text-base font-semibold border-2 border-dashed border-stone-400 rounded py-2 flex items-center justify-center gap-1.5 text-stone-700 hover:bg-amber-50 hover:border-amber-400 transition-colors"
-                        style={{ boxShadow: "2px 2px 0 #d6d3d1" }}
-                      >
-                        {icon} {name}
-                      </button>
-                    ))}
-                  </div>
-
                   <div className="flex items-center gap-2 mb-4">
                     <div className="flex-1 border-t-2 border-dashed border-stone-200" />
-                    <span className="font-caveat text-xs text-stone-300">or continue with email</span>
+                    <span className="font-caveat text-xs text-stone-300"> continue with email</span>
                     <div className="flex-1 border-t-2 border-dashed border-stone-200" />
                   </div>
 

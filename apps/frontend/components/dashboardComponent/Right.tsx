@@ -6,13 +6,14 @@ import { useRouter, usePathname } from "next/navigation"
 
 type Room = { id: string; slug: string; adminId: string; createdAt: string }
 
-const Right = () => {
+const Right = ({refreshRoom}:{refreshRoom:()=>void}) => {
   const [search, setSearch] = useState("")
   const [results, setResults] = useState<Room[]>([])
   const [notFound, setNotFound] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [roomName, setRoomName] = useState("")
   const [createError, setCreateError] = useState("")
+  
   const router = useRouter()
   const pathname = usePathname()
 
@@ -35,7 +36,10 @@ const Right = () => {
   }, [search])
 
   const handleCreate = async () => {
-    if (!roomName.trim()) return
+    if (roomName.trim().length<=2){
+       setCreateError("Room name should be of atleast 2 length")
+       return;
+    }
     const token = localStorage.getItem("token")
     setCreateError("")
     try {
@@ -43,6 +47,7 @@ const Right = () => {
         { name: roomName },
         { headers: { Authorization: `Bearer ${token}` } }
       )
+      refreshRoom()
       setShowModal(false)
       setRoomName("")
     } catch {
@@ -83,13 +88,15 @@ const Right = () => {
         {!search && (
           <p className="text-center text-sm text-stone-300 mt-10">Search for a room to join</p>
         )}
-        {search && notFound && (
-          <p className="text-center text-sm text-stone-400 mt-6">No room found for "{search}"</p>
-        )}
+            {search && results.length === 0 && (
+        <p className="text-center text-sm text-stone-400 mt-6">
+          No room found for "{search}"
+        </p>
+      )}
         {results.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-2">
             {results.map(room => (
-              <div key={room.id} onClick={() => router.push(`/canvas/${room.id}`)}
+              <div key={room.id} onClick={() => router.push(`/canvas/${room.slug}/${room.id}`)}
                 className="bg-stone-50 border border-stone-200 rounded-xl p-3 flex items-center
                            gap-3 cursor-pointer hover:border-amber-400 hover:bg-amber-50 transition-all">
                 <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center
@@ -107,31 +114,63 @@ const Right = () => {
       </div>
 
       {/* Modal */}
-      {showModal && (
-        <div className="absolute inset-0 bg-black/25 flex items-center justify-center z-10 rounded-xl">
-          <div className="bg-white rounded-2xl p-6 w-80 shadow-lg">
-            <h3 className="text-base font-semibold text-stone-800 mb-1">Create a new room</h3>
-            <p className="text-xs text-stone-400 mb-4">Give your room a unique name</p>
-            <input type="text" placeholder="Room name" value={roomName}
-              onChange={e => { setRoomName(e.target.value); setCreateError("") }}
-              className="w-full px-3 py-2.5 text-sm rounded-lg border border-stone-200 bg-stone-50
-                         outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all"/>
-            {createError && (
-              <p className="text-xs text-red-400 mt-2">{createError}</p>
-            )}
-            <div className="flex gap-2 justify-end mt-4">
-              <button onClick={() => { setShowModal(false); setRoomName(""); setCreateError("") }}
-                className="px-4 py-1.5 text-sm rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50 transition-colors">
-                Cancel
-              </button>
-              <button onClick={handleCreate}
-                className="px-4 py-1.5 text-sm rounded-lg bg-amber-400 hover:bg-amber-500 text-white font-medium transition-colors">
-                Create
-              </button>
-            </div>
-          </div>
-        </div>
+   {showModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center">
+    
+    {/* Overlay */}
+    <div 
+      className="absolute inset-0 bg-black/25"
+      onClick={() => setShowModal(false)}
+    />
+
+    {/* Modal */}
+    <div className="relative bg-white rounded-2xl p-6 w-80 shadow-lg">
+      <h3 className="text-base font-semibold text-stone-800 mb-1">
+        Create a new room
+      </h3>
+      <p className="text-xs text-stone-400 mb-4">
+        Give your room a unique name
+      </p>
+
+      <input
+        type="text"
+        placeholder="Room name"
+        value={roomName}
+        onChange={e => {
+          setRoomName(e.target.value)
+          setCreateError("")
+        }}
+        className="w-full px-3 py-2.5 text-sm rounded-lg border border-stone-200 bg-stone-50
+                   outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100
+                   transition-all text-stone-500"
+      />
+
+      {createError && (
+        <p className="text-xs text-red-400 mt-2">{createError}</p>
       )}
+
+      <div className="flex gap-2 justify-end mt-4">
+        <button
+          onClick={() => {
+            setShowModal(false)
+            setRoomName("")
+            setCreateError("")
+          }}
+          className="px-4 py-1.5 text-sm rounded-lg border border-stone-200 text-stone-500 hover:bg-stone-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleCreate}
+          className="px-4 py-1.5 text-sm rounded-lg bg-amber-400 hover:bg-amber-500 text-white font-medium"
+        >
+          Create
+        </button>
+      </div>
+    </div>
+  </div>
+)}
     </div>
   )
 }

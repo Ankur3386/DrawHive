@@ -6,12 +6,7 @@ services:
      - "5432:5432"
     environment:
      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  timescale_db:
-    image: timescale/timescaledb-ha:pg18
-    ports:
-     - "5433:5432"
-    environment:
-     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}   
+ 
   redis:
     image: redis
     ports:
@@ -29,7 +24,6 @@ services:
      - "3005:3005"
     depends_on:
      - postgres 
-     - timescale_db
     
       
   ws:
@@ -46,7 +40,6 @@ services:
      - "8080:8080"
     depends_on:
      - postgres
-     - timescale_db  
      - redis
   front:
     build:

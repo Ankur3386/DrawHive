@@ -51,4 +51,5 @@ model RoomMember{
   room Room @relation(fields: [roomId],references: [id])
   user User @relation(fields: [userId],references: [id])
   joinedAt DateTime @default(now())
+  @@unique([userId, roomId]) //so that one entry for joining once
 }

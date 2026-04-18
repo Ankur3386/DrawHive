@@ -1,39 +1,18 @@
 "use client"
-import axios from "axios"
 import { useEffect, useState } from "react"
-import { usePathname } from "next/navigation"
 import Link from "next/link"
 
 type Room = { id: string; slug: string; adminId: string; createdAt: string }
 
-const Left = () => {
-  const [rooms, setRooms] = useState<Room[]>([])
-  const [ownedRoom, setOwnedRoom] = useState<{roomId:string,slug:string}[]>([])
-  const pathname = usePathname()
+const Left = ({ownedRoom,rooms}:{ownedRoom:{roomId:string,slug:string}[],rooms:Room[]}) => {
  const [user, setUser] = useState("")
-
+console.log("rooms:", rooms)
 useEffect(() => {
   const storedUser = localStorage.getItem("user")
   if (storedUser) {
     setUser(JSON.parse(storedUser))
   }
 }, [])
-  useEffect(() => {
-    const token = localStorage.getItem("token")
-    if (!token) return
-    axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/dashboard`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setRooms(res.data)).catch(console.error)
-
-    axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/roomOwned`, {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => {
-      console.log(res)
-      setOwnedRoom(res.data)}).catch(console.error)
-  }, [pathname])
-
-
-
   return (
     <div className="w-[90%] h-[97%] bg-white rounded-xl m-4 flex flex-col overflow-hidden shadow-sm">
 

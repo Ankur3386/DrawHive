@@ -94,7 +94,12 @@ this.canvas.removeEventListener("mousedown",this.mouseDownHandler
 
 }
 setTool(tool:"circle"|"pencil"|"rect"|"eraser"|"arrow"|"diamond"|"line"){
-this.currShape=tool ;
+    this.currShape = tool
+    if(tool === "eraser") {
+        this.canvas.style.cursor = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='9' fill='none' stroke='black' stroke-width='1.5' stroke-dasharray='4 2'/%3E%3C/svg%3E") 10 10, crosshair`
+    } else {
+        this.canvas.style.cursor = "crosshair"
+    }
 }
 
 setStyle(borderColor:string,fillColor:string,lineDash:{x:number,y:number},lineWidth:number){
@@ -111,6 +116,14 @@ async  init(){
  this.clearCanvas() ;
 }
 
+private getCanvasCoords(e: MouseEvent): {x: number, y: number} {
+    const rect = this.canvas.getBoundingClientRect()
+    return {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+    }
+}
+
 initHandler(){
 this.socket.onmessage=(event)=>{
 
@@ -120,8 +133,11 @@ if(message.type=='chat'){
   
    //  {existingShapes.push(messageShape)
   //  clearCanvas(existingShapes,canvas,ctx) } // here there is a race condition case as when someone else add a new shape than my canvas drawing will go away and i have to move mouse  
-  this.existingShapes.push(messageShape)
-   this.clearCanvas() //we are doing state management as when we push a new shape than re-render  the canvas and add new shape just like how react do state  management as when a new state change than it re render  
+    const alreadyExists = this.existingShapes.find(s => s.id === messageShape.id)
+    if(!alreadyExists){
+        this.existingShapes.push(messageShape)
+        this.clearCanvas()//we are doing state management as when we push a new shape than re-render  the canvas and add new shape just like how react do state  management as when a new state change than it re render  
+    }
 } 
 else if (message.type === 'deleteChat') {
       const id = message.id;
@@ -201,7 +217,7 @@ clearCanvas(){
   this.ctx.lineTo(centerX, shape.startY + height)//bottom
 
     this.ctx.lineTo(shape.startX, centerY)//left
-
+this.ctx.closePath()
 this.ctx.fillStyle=shape.fillColor
 this.ctx.fill()
     this.ctx.strokeStyle=shape.borderColor
@@ -221,16 +237,14 @@ this.ctx.fill()
  
 }
 mouseDownHandler=(e:any)=>{
+ const {x,y} = this.getCanvasCoords(e)
  this.clicked = true;
-   this.startX=e.clientX;
-     this.startY =e.clientY
+   this.startX=x;
+     this.startY =y
      console.log(this.lineDash)
      if(this.currShape=="pencil"){
       this.pencilPointsArray.push({startX:this.startX,startY:this.startY})
      }else if(this.currShape=="eraser"){
-        let x=e.clientX
-        let y=e.clientY
-     
         let id=""
         for(let i=this.existingShapes.length-1;i>=0;i--){
           const shape=this.existingShapes[i]
@@ -259,12 +273,15 @@ mouseDownHandler=(e:any)=>{
       }
 }
 mouseUpHandler=(e:any)=>{
-this.clicked =false;
-    const width= Math.abs(e.clientX-this.startX);
-    const height =e.clientY-this.startY;
+ if(!this.clicked) return  // ✅ guard - ignore mouseup if mousedown never fired on canvas
+    const {x,y} = this.getCanvasCoords(e)
+    this.clicked = false;
+    const width= Math.abs(x-this.startX);
+    const height =y-this.startY;
     //@ts-ignore
     const currShape = this.currShape
-   
+     if(Math.abs(width) < 2 && Math.abs(height) < 2) return
+     if(currShape === "eraser") return // as handled in mouseDown
     if(currShape=="rect"){
      
       const shape:Shape ={type:"rect",
@@ -314,8 +331,8 @@ this.clicked =false;
            id:crypto.randomUUID(),
         startX:this.startX,
         startY:this.startY,
-        endX:e.clientX,
-        endY:e.clientY,
+        endX:x,
+        endY:y,
          fillColor:this.fillColor,
         borderColor:this.borderColor,
         lineDash:this.lineDash,
@@ -355,8 +372,8 @@ this.clicked =false;
         id:crypto.randomUUID(),
      startX:this.startX,
      startY:this.startY,
-     endX:e.clientX,
-     endY:e.clientY,
+     endX:x,
+     endY:y,
       fillColor:this.fillColor,
         borderColor:this.borderColor,
         lineDash:this.lineDash,
@@ -376,8 +393,8 @@ this.clicked =false;
       id:crypto.randomUUID(),
      startX:this.startX,
      startY:this.startY,
-     endX:e.clientX,
-     endY:e.clientY,
+     endX:x,
+     endY:y,
       fillColor:this.fillColor,
         borderColor:this.borderColor,
         lineDash:this.lineDash,
@@ -394,9 +411,10 @@ this.clicked =false;
       }
 }
 mouseMoveHandler=(e:any)=>{
+const {x,y} = this.getCanvasCoords(e)
 if(this.clicked ==true){
-const width=e.clientX-this.startX ;
- const height =e.clientY -this.startY ;
+const width=x-this.startX ;
+ const height =y-this.startY ;
      //@ts-ignore
    const currShape =this.currShape
  
@@ -421,19 +439,19 @@ this.ctx.strokeStyle=this.borderColor
 this.ctx.stroke();
 }else if(this.currShape=="arrow"){
     var headlen = 14; // length of head in pixels
-  var dx = e.clientX-this.startX;
-  var dy = e.clientY-this.startY;
+  var dx = x-this.startX;
+  var dy = y-this.startY;
   var angle = Math.atan2(dy, dx);
   this.ctx.beginPath();
   this.ctx.moveTo(this.startX, this.startY);
-  this.ctx.lineTo(e.clientX, e.clientY);
-  this.ctx.lineTo(e.clientX - headlen * Math.cos(angle - Math.PI / 6), e.clientY - headlen * Math.sin(angle - Math.PI / 6));
-  this.ctx.moveTo(e.clientX, e.clientY );
-  this.ctx.lineTo(e.clientX - headlen * Math.cos(angle + Math.PI / 6), e.clientY  - headlen * Math.sin(angle + Math.PI / 6))
+  this.ctx.lineTo(x, y);
+  this.ctx.lineTo(x - headlen * Math.cos(angle - Math.PI / 6), y - headlen * Math.sin(angle - Math.PI / 6));
+  this.ctx.moveTo(x, y);
+  this.ctx.lineTo(x - headlen * Math.cos(angle + Math.PI / 6), y - headlen * Math.sin(angle + Math.PI / 6))
   this.ctx.strokeStyle=this.borderColor
   this.ctx.stroke();
 } else if(this.currShape=="pencil"){
-this.pencilPointsArray.push({startX:e.clientX,startY:e.clientY})
+this.pencilPointsArray.push({startX:x,startY:y})
 this.ctx.beginPath();
 for(let i=1;i<this.pencilPointsArray.length;i++){
  const prev = this.pencilPointsArray[i-1]
@@ -467,7 +485,7 @@ this.ctx.beginPath();
 this.ctx.moveTo(this.startX,this.startY);
 
 // Set an end-point
-this.ctx.lineTo(e.clientX,e.clientY);
+this.ctx.lineTo(x,y);
 
  this.ctx.strokeStyle=this.borderColor
 this.ctx.stroke();
@@ -558,6 +576,21 @@ if(halfWidth === 0 || halfHeight === 0){
  }
  return (dx / halfWidth + dy / halfHeight) <= 1
 
+}else if(shape.type === "line") {
+    const x1 = shape.startX, y1 = shape.startY
+    const x2 = shape.endX, y2 = shape.endY
+    const numerator = Math.abs((y2-y1)*x - (x2-x1)*y + x2*y1 - y2*x1)
+    const denominator = Math.sqrt((y2-y1)**2 + (x2-x1)**2)
+    if(denominator === 0) return false
+    const distance = numerator / denominator
+    const tolerance = 5
+    return (
+        x >= Math.min(x1,x2) - tolerance &&
+        x <= Math.max(x1,x2) + tolerance &&
+        y >= Math.min(y1,y2) - tolerance &&
+        y <= Math.max(y1,y2) + tolerance &&
+        distance <= tolerance
+    )
 }
 }
 }

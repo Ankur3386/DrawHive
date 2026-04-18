@@ -92,6 +92,14 @@ export const createRoom =async(req:Request,res:Response,next:NextFunction)=>{
       if(!userId){
          return res.status(400).json("send correct credentials ");
       }
+      const ifRoomALreadyExist=await prismaClient.room.findFirst({
+        where:{
+          slug:parsedData.data.name
+        }
+      })
+      if(ifRoomALreadyExist){
+         return res.status(400).json("room with this name already exit");
+      }
     const room = await prismaClient.room.create({
         data:{
             slug:parsedData.data.name,
@@ -209,11 +217,9 @@ const hasAlreadyJoined= await prismaClient.roomMember.findFirst({
     
   }
 })
-console.log("fds")
 if(hasAlreadyJoined){
   return res.status(200).json("user has already joined")
 }
-console.log("fdssssss")
 const join= await prismaClient.roomMember.create({
   data:{
     userId:req.userId,

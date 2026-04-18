@@ -22,21 +22,31 @@ token:string
      const[fillColor,setfillColor]=useState("transparent")
      const[lineWidth,setLineWidth]=useState<number>(1)
      const[lineDash,setLineDash]=useState<{x:number,y:number}>({x:0,y:0})
- useEffect(()=>{
-if(canvasRef.current){
- const canvas= canvasRef.current
-  canvasRef.current.width = window.innerWidth;
-  canvasRef.current.height = window.innerHeight;
- const g = new Game(canvas,roomId,socket,token);
- setGame(g)
- //return to handle double rendering and used return as it destroy when useeffect run second time or unmount 
- return()=>{
- g.destroy()
- }
-}
-    },[canvasRef])
+useEffect(() => {
+    if (!canvasRef.current) return
+    const canvas = canvasRef.current
+    let g: Game
 
+    const observer = new ResizeObserver(() => {
+        const rect = canvas.getBoundingClientRect()
+        canvas.width = rect.width
+        canvas.height = rect.height
 
+        if (!g) {
+            g = new Game(canvas, roomId, socket, token)
+            setGame(g)
+        } else {
+            g.clearCanvas() 
+        }
+    })
+
+    observer.observe(canvas)
+
+    return () => {
+        observer.disconnect()
+        g?.destroy()
+    }
+}, [canvasRef])
     useEffect(()=>{
     game?.setTool(currShape)
   
@@ -47,7 +57,7 @@ if(canvasRef.current){
     },[borderColor,fillColor,lineWidth,lineDash])
     return(
  <div className="h-[100vh] overflow-hidden relative">
-  <canvas ref={canvasRef}   className="bg-white w-screen h-screen"/>
+  <canvas ref={canvasRef}   className="bg-white block w-[100%] h-[100%]"/>
 
   <IoMdMenu className="absolute top-4 left-4 w-7 h-7 text-white z-10" onClick={()=>{
     setCustomize(prev=>!prev)

@@ -10,7 +10,7 @@ export const loginSchema= z.object({
    password:z.string(),
 }) 
 export const roomSchema= z.object({
-   name:z.string(),
+   name:z.string().min(2),
 }) 
 declare global{
    namespace Express{
