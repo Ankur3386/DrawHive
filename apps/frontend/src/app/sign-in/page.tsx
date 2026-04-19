@@ -127,7 +127,7 @@ export default function SignupPage() {
                   <motion.button
                     whileTap={{ scale: 0.97 }}
                     onClick={submit}
-                    className="w-full mt-1 py-3 font-caveat text-lg font-bold text-stone-900 bg-amber-400 border-2 border-dashed border-stone-800 rounded transition-all hover:bg-amber-300"
+                    className="w-full mt-1 py-3 font-caveat text-lg font-bold text-stone-900 bg-amber-400 border-2 border-dashed border-stone-800 rounded transition-all hover:bg-amber-300 cursor-pointer"
                     style={{ boxShadow: "3px 3px 0 #1c1917" }}
                   >
                     {loading ? "✏️ SignIn..." : "SignIn to my account →"}
