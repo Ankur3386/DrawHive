@@ -21,6 +21,7 @@ jobs:
          file: docker/Dockerfile.ws
          push: true
          tags: ${{secrets.DOCKERHUB_USERNAME}}/drawhive-ws:${{github.sha}}
+
      - name: deploy
        uses: appleboy/ssh-action@v1.0.3
        with:
