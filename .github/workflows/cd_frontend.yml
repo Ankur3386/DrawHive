@@ -18,7 +18,7 @@ jobs:
        uses: docker/build-push-action@v3
        with:
          context: .
-         file: Dockerfile.fe 
+         file: docker/Dockerfile.fe 
          push: true
          tags: ${{secrets.DOCKERHUB_USERNAME}}/drawhive-fe:${{github.sha}}
      - name: deploy

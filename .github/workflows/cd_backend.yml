@@ -32,7 +32,7 @@ jobs:
            docker network create drawhive-network || true
            docker stop drawhive-http || true
            docker rm drawhive-http || true
-           docker run -d\
+           docker run -d \
            --name drawhive-http \
            --network drawhive-network \
            -e DATABASE_URL=${{secrets.DATABASE_URL}} \
