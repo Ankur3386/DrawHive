@@ -39,13 +39,20 @@ export class User{
                         break;
 
                     case 'leave_room':
-                        RoomManager.getInstance().removeUser(this.roomId!, this.userId);
-                        SubscriberManager.getInstance().unSubscribeUser(this.roomId!, this.userId);
+                           if (!this.roomId) {
+                                    return;
+                                }
+                        RoomManager.getInstance().removeUser(this.roomId, this.userId);
+                        SubscriberManager.getInstance().unSubscribeUser(this.roomId, this.userId);
                         break;
 
                     case 'chat':
+                        
                         const roomId = parsedData.roomId;
                         const msg = parsedData.message;
+                         if (!roomId || !msg) {
+                                return;
+                            }
                         await prismaClient.chat.create({
                             data:{
                                 roomId: roomId,
@@ -63,7 +70,9 @@ export class User{
                  case 'deleteChat':
     const id = parsedData.id;
     const rId = parsedData.roomId;
-
+                if(!id || !rId){
+                    return;
+                }
     // find the chat row where the message JSON contains this shape id
     const chatToDelete = await prismaClient.chat.findFirst({
         where: {
