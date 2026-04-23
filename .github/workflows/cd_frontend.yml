@@ -29,10 +29,10 @@ jobs:
          username: ubuntu
          script: |
             docker pull ${{secrets.DOCKERHUB_USERNAME}}/drawhive-fe:${{github.sha}}
-            docker create network drawhive-network || true
+            docker  network create drawhive-network || true
             docker stop drawhive-fe || true
             docker rm drawhive-fe || true
-            docker run \
+            docker run -d \
             --name drawhive-fe \
             --network drawhive-network \
             -e NEXT_PUBLIC_BACKEND_URL=${{secrets.NEXT_PUBLIC_BACKEND_URL}} \

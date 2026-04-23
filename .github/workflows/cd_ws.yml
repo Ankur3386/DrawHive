@@ -15,7 +15,7 @@ jobs:
          username: ${{secrets.DOCKERHUB_USERNAME}}
          password: ${{secrets.DOCKERHUB_TOKEN}}
      - name: build-and-push-image
-       uses: docker/build-push-action@v2
+       uses: docker/build-push-action@v3
        with:
          context: .
          file: docker/Dockerfile.ws
@@ -29,10 +29,10 @@ jobs:
          key: ${{secrets.key}}
          script: |
            docker pull  ${{secrets.DOCKERHUB_USERNAME}}/drawhive-ws:${{github.sha}}
-           docker create drawhive-network || true
+           docker network create drawhive-network || true
            docker stop drawhive-ws || true
            docker rm drawhive-ws || true
-           docker run \
+           docker run -d \
            --name drawhive-ws \
            --network drawhive-network \
            -e DATABASE_URL=${{secrets.DATABASE_URL}} \
