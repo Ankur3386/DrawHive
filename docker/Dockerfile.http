@@ -8,7 +8,7 @@ COPY ./packages ./packages
 COPY ./apps/http-backend/package.json ./apps/http-backend/package.json
 RUN pnpm i
 COPY ./apps/http-backend ./apps/http-backend
-RUN cd apps/http-backend && npx tsc -b && cd ../..
 RUN pnpm run dev:generate
+RUN cd apps/http-backend && npx tsc -b && cd ../..
 EXPOSE 3005
 CMD ["pnpm","run","start:http"]
