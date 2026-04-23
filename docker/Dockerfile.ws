@@ -7,7 +7,7 @@ COPY ./pnpm-lock.yaml ./pnpm-lock.yaml
 COPY ./packages ./packages
 COPY ./apps/ws-backend/package.json ./apps/ws-backend/package.json
 RUN pnpm i
-COPY /apps/ws-backend ./apps/ws-backend
+COPY ./apps/ws-backend ./apps/ws-backend
 RUN cd apps/ws-backend && npx tsc -b && cd ../..
 RUN pnpm run dev:generate
 EXPOSE 8080

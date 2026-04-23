@@ -7,7 +7,7 @@ COPY ./pnpm-lock.yaml ./pnpm-lock.yaml
 COPY ./packages ./packages
 COPY ./apps/http-backend/package.json ./apps/http-backend/package.json
 RUN pnpm i
-COPY /apps/http-backend ./apps/http-backend
+COPY ./apps/http-backend ./apps/http-backend
 RUN cd apps/http-backend && npx tsc -b && cd ../..
 RUN pnpm run dev:generate
 EXPOSE 3005
