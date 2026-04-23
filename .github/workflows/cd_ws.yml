@@ -39,6 +39,6 @@ jobs:
            -e DATABASE_URL="${{secrets.DATABASE_URL}}" \
            -e JWT_SECRET="${{secrets.JWT_SECRET}}" \
            -e REDIS_URL="${{secrets.REDIS_URL}}" \
-           ${{secrets.DOCKERHUB_USERNAME}}/drawhive-ws:${{github.sha}}
+           -p 8080:8080 ${{secrets.DOCKERHUB_USERNAME}}/drawhive-ws:${{github.sha}}
 
 

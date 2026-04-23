@@ -37,6 +37,6 @@ jobs:
            --network drawhive-network \
            -e DATABASE_URL="${{secrets.DATABASE_URL}}" \
            -e JWT_SECRET="${{secrets.JWT_SECRET}}" \
-           ${{secrets.DOCKERHUB_USERNAME}}/drawhive-http:${{github.sha}}
+           -p 3005:3005 ${{secrets.DOCKERHUB_USERNAME}}/drawhive-http:${{github.sha}}
 
 
