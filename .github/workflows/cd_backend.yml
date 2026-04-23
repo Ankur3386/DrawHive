@@ -35,8 +35,8 @@ jobs:
            docker run -d \
            --name drawhive-http \
            --network drawhive-network \
-           -e DATABASE_URL=${{secrets.DATABASE_URL}} \
-           -e JWT_SECRET=${{secrets.JWT_SECRET}} \
+           -e DATABASE_URL="${{secrets.DATABASE_URL}}" \
+           -e JWT_SECRET="${{secrets.JWT_SECRET}}" \
            ${{secrets.DOCKERHUB_USERNAME}}/drawhive-http:${{github.sha}}
 
 

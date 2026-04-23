@@ -35,9 +35,9 @@ jobs:
            docker run -d \
            --name drawhive-ws \
            --network drawhive-network \
-           -e DATABASE_URL=${{secrets.DATABASE_URL}} \
-           -e JWT_SECRET=${{secrets.JWT_SECRET}} \
-           -e REDIS_URL=${{secrets.REDIS_URL}} \
+           -e DATABASE_URL="${{secrets.DATABASE_URL}}" \
+           -e JWT_SECRET="${{secrets.JWT_SECRET}}" \
+           -e REDIS_URL="${{secrets.REDIS_URL}}" \
            ${{secrets.DOCKERHUB_USERNAME}}/drawhive-ws:${{github.sha}}
 
 
