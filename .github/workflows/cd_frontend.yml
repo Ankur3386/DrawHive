@@ -35,6 +35,6 @@ jobs:
             docker run -d \
             --name drawhive-fe \
             --network drawhive-network \
-            -e NEXT_PUBLIC_BACKEND_URL=${{secrets.NEXT_PUBLIC_BACKEND_URL}} \
-            -e NEXT_PUBLIC_WS_URL=${{secrets.NEXT_PUBLIC_WS_URL}} \
+            -e NEXT_PUBLIC_BACKEND_URL="${{secrets.NEXT_PUBLIC_BACKEND_URL}}" \
+            -e NEXT_PUBLIC_WS_URL="${{secrets.NEXT_PUBLIC_WS_URL}}" \
             ${{secrets.DOCKERHUB_USERNAME}}/drawhive-fe:${{github.sha}}
